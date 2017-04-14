@@ -33,5 +33,17 @@ module.exports = {
         }
       }
     ]
+  },
+  resolve: {
+    alias: {
+      request$: 'xhr'
+    }
+  },
+  externals: {
+    '@consoless/core': {
+      commonjs: '@consoless/core',
+      amd: '@consoless/core',
+      root: 'coreLess'
+    }
   }
 };
