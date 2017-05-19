@@ -15,7 +15,7 @@ transportHttp.defaultConfig = {
   // fields: ['l', 'm', 'to'], // TODO setup sent fields
   method: 'GET',
   // Don't throw errors on remote request
-  suppressErrors: true,
+  suppressRemoteErrors: true,
   url: null
 };
 
@@ -68,8 +68,8 @@ function transportHttp(level, parts) {
       method: config.method,
       url: config.url
     }, options), (err, resp) => {
-      if (err && !config.suppressErrors) {
-        return reject(new Error(err));
+      if (err && !config.suppressRemoteErrors) {
+        return reject(err);
       }
 
       // Can be undefined in case if there is an error but they are suppressed
