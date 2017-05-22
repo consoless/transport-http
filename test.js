@@ -3,6 +3,11 @@ import logger from './index';
 
 const url = 'http://localhost/accept-log';
 const UNSUPPORTED_METHOD = 'PUT';
+let messageParts;
+
+beforeEach(() => {
+  messageParts = ['hello', 'world'];
+});
 
 describe('Sends message over the network', () => {
   test('GET', () => {
@@ -10,9 +15,22 @@ describe('Sends message over the network', () => {
       url
     };
 
-    const response = logger.bind({config})(2, ['hello', 'world']);
+    const response = logger.bind({config})(2, messageParts);
     return expect(response).resolves.toMatchObject({
       body: `${url}?l=error&m=hello%20world&to=3`
+    });
+  });
+
+  test('GET (params are glued correct)', () => {
+    const urlLong = `${url}?collect-message`;
+
+    const config = {
+      url: urlLong
+    };
+
+    const response = logger.bind({config})(2, messageParts);
+    return expect(response).resolves.toMatchObject({
+      body: `${urlLong}&l=error&m=hello%20world&to=3`
     });
   });
 
@@ -22,49 +40,61 @@ describe('Sends message over the network', () => {
       url
     };
 
-    const response = logger.bind({config})(2, ['hello', 'world']);
+    const response = logger.bind({config})(2, messageParts);
     return expect(response).resolves.toMatchObject({
       body: '{"l":"error","m":"hello world","to":3}'
+    });
+  });
+
+  test('Custom fields params', () => {
+    const config = {
+      fieldsMap: {
+        level: 'lvl',
+        message: 'msg',
+        timeOffset: 't_o'
+      },
+      url
+    };
+
+    const response = logger.bind({config})(2, messageParts);
+    return expect(response).resolves.toMatchObject({
+      body: `${url}?lvl=error&msg=hello%20world&t_o=3`
     });
   });
 });
 
 describe('Errors handling', () => {
   test('Url not set', () => {
-    const config = {
-      suppressRemoteErrors: false
-    };
-
-    expect(() => logger.bind({config})(2, ['hello', 'world'])).toThrow('Url must be set');
+    expect(() => logger.bind({})(2, messageParts)).toThrow('Url must be set');
   });
 
   test('Invalid method', () => {
     const config = {
       method: UNSUPPORTED_METHOD,
-      suppressRemoteErrors: false,
       url
     };
 
-    expect(() => logger.bind({config})(2, ['hello', 'world'])).toThrow(`Method ${UNSUPPORTED_METHOD} is not supported`);
+    expect(() => logger.bind({config})(2, messageParts)).toThrow(`Method ${UNSUPPORTED_METHOD} is not supported. Chose from GET, POST`);
   });
 
-  test('Invalid url during request', () => {
-    const config = {
-      suppressRemoteErrors: false,
-      url: request.INVALID_URL
-    };
+  describe('Remote errors', () => {
+    test('Throws Invalid url during request', () => {
+      const config = {
+        suppressRemoteErrors: false,
+        url: request.INVALID_URL
+      };
 
-    const response = logger.bind({config})(2, ['hello', 'world']);
-    return expect(response).rejects.toEqual('invalid url');
-  });
+      const response = logger.bind({config})(2, messageParts);
+      return expect(response).rejects.toEqual('invalid url');
+    });
 
-  test('Supress: Invalid url during request', () => {
-    const config = {
-      suppressRemoteErrors: true,
-      url: request.INVALID_URL
-    };
+    test('Invalid url during request (suppressed)', () => {
+      const config = {
+        url: request.INVALID_URL
+      };
 
-    const response = logger.bind({config})(2, ['hello', 'world']);
-    return expect(response).resolves.toEqual(undefined);
+      const response = logger.bind({config})(2, messageParts);
+      return expect(response).resolves.toEqual(undefined);
+    });
   });
 });

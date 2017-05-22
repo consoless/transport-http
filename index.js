@@ -12,43 +12,40 @@ const logLevelMap = {
 };
 
 transportHttp.defaultConfig = {
-  // fields: ['l', 'm', 'to'], // TODO setup sent fields
+  fieldsMap: null,
   method: 'GET',
   // Don't throw errors on remote request
   suppressRemoteErrors: true,
   url: null
 };
 
+/**
+ * Sends message over the network
+ * @param {string} level
+ * @param {Array} parts
+ * @return {Promise}
+ */
 function transportHttp(level, parts) {
   const logLevel = logLevelMap[level];
   const config = Object.assign({}, transportHttp.defaultConfig, this.config);
 
+  // TODO Parameters validation should me moved out of transport implementation, because of consistency (one validation interface for every transport) and code coverage
+  /* istanbul ignore if */
   if (!logLevel) {
     return null;
   }
 
   let options = {};
-  const params = {
-    // Level
-    l: logLevel,
-    // Message
+  const params = getParamsObj({
+    level: logLevel,
     // TODO Think about interface which will return message instead of parts.
-    // TODO Transformers should be responsible for parts concatenation?
-    m: parts.join(' '),
-    // Time offset
-    to: -(new Date().getTimezoneOffset() / 60)
-  };
+    // TODO Transformers should be responsible for parts concatenation? or probably after transformers concatenation should be done and concatenated string passed to transports
+    message: parts.join(' '),
+    timeOffset: -(new Date().getTimezoneOffset() / 60)
+  }, config.fieldsMap);
 
   if (!config.url) {
     throw new Error(`Url must be set`);
-  }
-
-  if (!config.method) {
-    throw new Error(`Method is not set`);
-  }
-
-  if (supportedMethods.indexOf(config.method) === -1) {
-    throw new Error(`Method ${config.method} is not supported. Chose from ${supportedMethods.join(', ')}`);
   }
 
   if (config.method === 'GET') {
@@ -60,6 +57,8 @@ function transportHttp(level, parts) {
     options.headers = {
       'Content-type': 'application/json'
     };
+  } else {
+    throw new Error(`Method ${config.method} is not supported. Chose from ${supportedMethods.join(', ')}`);
   }
 
   // TODO add ability to set promise implementation. Better if it's done on global (consoless-core) level
@@ -78,9 +77,33 @@ function transportHttp(level, parts) {
   });
 }
 
+/**
+ *
+ * @param {string} level
+ * @param {string} message
+ * @param {number} timeOffset
+ * @param {{level, message, timeOffset} | null} fieldsMap
+ * @return {{level, message, timeOffset}}
+ */
+function getParamsObj({level, message, timeOffset}, fieldsMap) {
+  fieldsMap = fieldsMap || {};
+
+  return {
+    [fieldsMap.level || 'l']: level,
+    [fieldsMap.message || 'm']: message,
+    [fieldsMap.timeOffset || 'to']: timeOffset
+  };
+}
+
+/**
+ * Builds query string from object
+ * @param params
+ * @return {string}
+ */
 function buildQuery(params) {
   const keys = Object.keys(params);
 
+  /* istanbul ignore if */
   if (keys.length === 0) {
     return '';
   }
