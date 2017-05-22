@@ -31,7 +31,7 @@ describe('Sends message over the network', () => {
 
     const response = logger.bind({config})(2, messageParts);
     return expect(response).resolves.toMatchObject({
-      body: `${urlLong}&l=error&m=hello%20world&to=$\{timeOffset}`
+      body: `${urlLong}&l=error&m=hello%20world&to=${timeOffset}`
     });
   });
 
@@ -43,7 +43,7 @@ describe('Sends message over the network', () => {
 
     const response = logger.bind({config})(2, messageParts);
     return expect(response).resolves.toMatchObject({
-      body: '{"l":"error","m":"hello world","to":${timeOffset}}'
+      body: `{"l":"error","m":"hello world","to":${timeOffset}}`
     });
   });
 
@@ -59,7 +59,7 @@ describe('Sends message over the network', () => {
 
     const response = logger.bind({config})(2, messageParts);
     return expect(response).resolves.toMatchObject({
-      body: `${url}?lvl=error&msg=hello%20world&t_o=$\{timeOffset}`
+      body: `${url}?lvl=error&msg=hello%20world&t_o=${timeOffset}`
     });
   });
 });
