@@ -3,6 +3,7 @@ import logger from './index';
 
 const url = 'http://localhost/accept-log';
 const UNSUPPORTED_METHOD = 'PUT';
+const timeOffset = -(new Date().getTimezoneOffset() / 60);
 let messageParts;
 
 beforeEach(() => {
@@ -17,7 +18,7 @@ describe('Sends message over the network', () => {
 
     const response = logger.bind({config})(2, messageParts);
     return expect(response).resolves.toMatchObject({
-      body: `${url}?l=error&m=hello%20world&to=3`
+      body: `${url}?l=error&m=hello%20world&to=${timeOffset}`
     });
   });
 
@@ -30,7 +31,7 @@ describe('Sends message over the network', () => {
 
     const response = logger.bind({config})(2, messageParts);
     return expect(response).resolves.toMatchObject({
-      body: `${urlLong}&l=error&m=hello%20world&to=3`
+      body: `${urlLong}&l=error&m=hello%20world&to=$\{timeOffset}`
     });
   });
 
@@ -42,7 +43,7 @@ describe('Sends message over the network', () => {
 
     const response = logger.bind({config})(2, messageParts);
     return expect(response).resolves.toMatchObject({
-      body: '{"l":"error","m":"hello world","to":3}'
+      body: '{"l":"error","m":"hello world","to":${timeOffset}}'
     });
   });
 
@@ -58,7 +59,7 @@ describe('Sends message over the network', () => {
 
     const response = logger.bind({config})(2, messageParts);
     return expect(response).resolves.toMatchObject({
-      body: `${url}?lvl=error&msg=hello%20world&t_o=3`
+      body: `${url}?lvl=error&msg=hello%20world&t_o=$\{timeOffset}`
     });
   });
 });
