@@ -35,7 +35,7 @@ function transportHttp(level, parts) {
     return null;
   }
 
-  let options = {};
+  const options = {};
   const params = getParamsObj({
     level: logLevel,
     // TODO Think about interface which will return message instead of parts.

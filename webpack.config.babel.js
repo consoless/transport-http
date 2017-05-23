@@ -22,10 +22,12 @@ module.exports = {
             ['env', {
               modules: false,
               targets: {
-                browsers: [ // TODO apply this only if environment is browser
+                // TODO apply this only if environment is browser
+                browsers: [
                   'last 2 versions'
                 ],
-                node: 6.9 // TODO apply this only if environment is node (processed by webpack)
+                // TODO apply this only if environment is node (processed by webpack)
+                node: 6.9
               }
             }]
           ],

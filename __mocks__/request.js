@@ -3,10 +3,10 @@
 module.exports = fakeRequest;
 
 function fakeRequest(options, callback) {
-  let response = {};
+  const response = {};
 
   if (options.url.indexOf(fakeRequest.INVALID_URL) !== -1) {
-    // error during request
+    // Error during request
     return callback('invalid url');
   }
 
@@ -17,7 +17,7 @@ function fakeRequest(options, callback) {
     response.body = options.body;
   }
 
-  callback(null, response)
+  callback(null, response);
 }
 
 fakeRequest.INVALID_URL = '[INVALID_URL]';
